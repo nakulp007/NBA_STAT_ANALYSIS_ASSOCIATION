@@ -1,7 +1,5 @@
 FP-Growth options:
 
--t <training file>
-	The name of the training file.
 -P <attribute index of positive value>
 	Set the index of the attribute value to consider as 'positive'
 	for binary attributes in normal dense instances. Index 2 is always
