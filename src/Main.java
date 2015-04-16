@@ -33,6 +33,9 @@ public class Main {
     static String DB_NAME = "nbaDb";
     static String COLLECTION_TEAM_RESULTS = "teamResults";
 
+    static double statInterval = .05d;
+    static double maxStat = .5d;
+
     public static void main(String[] args) {
         //generate data file from DB that can be used to find association rules
         System.out.println("Generating data file.");
@@ -104,7 +107,7 @@ public class Main {
                 System.out.println("No association rules found.");
             }
         } catch(Exception e) {
-            System.out.println("\n"+e.getMessage()+errText);
+            System.out.println("\n" + e.getMessage() + errText);
         }
     }
 
@@ -171,16 +174,21 @@ public class Main {
         String returnString = "";
 
         for (String anAttributeIndividual : attributeIndividual) {
-            returnString += "@attribute " + anAttributeIndividual + "_gte_0.0	{0,1}\n";
-            returnString += "@attribute " + anAttributeIndividual + "_gte_0.1	{0,1}\n";
-            returnString += "@attribute " + anAttributeIndividual + "_gte_0.2	{0,1}\n";
-            returnString += "@attribute " + anAttributeIndividual + "_gte_0.3	{0,1}\n";
-            returnString += "@attribute " + anAttributeIndividual + "_gte_0.4	{0,1}\n";
-            returnString += "@attribute " + anAttributeIndividual + "_gte_0.5	{0,1}\n";
-            returnString += "@attribute " + anAttributeIndividual + "_gte_0.6	{0,1}\n";
-            returnString += "@attribute " + anAttributeIndividual + "_gte_0.7	{0,1}\n";
-            returnString += "@attribute " + anAttributeIndividual + "_gte_0.8	{0,1}\n";
-            returnString += "@attribute " + anAttributeIndividual + "_gte_0.9	{0,1}\n";
+            double stat = 0.0d;
+            while (Math.abs(maxStat - stat) > .0001) {
+                returnString += String.format("@attribute %s_gte_%.2f {0,1}\n", anAttributeIndividual, stat);
+                stat += statInterval;
+            }
+//            returnString += "@attribute " + anAttributeIndividual + "_gte_0.0	{0,1}\n";
+//            returnString += "@attribute " + anAttributeIndividual + "_gte_0.1	{0,1}\n";
+//            returnString += "@attribute " + anAttributeIndividual + "_gte_0.2	{0,1}\n";
+//            returnString += "@attribute " + anAttributeIndividual + "_gte_0.3	{0,1}\n";
+//            returnString += "@attribute " + anAttributeIndividual + "_gte_0.4	{0,1}\n";
+//            returnString += "@attribute " + anAttributeIndividual + "_gte_0.5	{0,1}\n";
+//            returnString += "@attribute " + anAttributeIndividual + "_gte_0.6	{0,1}\n";
+//            returnString += "@attribute " + anAttributeIndividual + "_gte_0.7	{0,1}\n";
+//            returnString += "@attribute " + anAttributeIndividual + "_gte_0.8	{0,1}\n";
+//            returnString += "@attribute " + anAttributeIndividual + "_gte_0.9	{0,1}\n";
         }
 
         return returnString;
@@ -202,18 +210,23 @@ public class Main {
 
     private static String parseTeamFormStat(Double stat) {
         String returnString = "";
-        int[] statArray = new int[10];
+        List<Integer> statList = new ArrayList<>();
+        for (int i = 0; i < (maxStat/statInterval); i++) {
+            statList.add(i, 0);
+        }
 
         //using while loop here to calculate stat relationship instead of nested ifs
         int index = 0;
         double curStat = 0.0d;
-        while (stat >= curStat && curStat < 1) {
-            statArray[index] = 1;
+        while (stat >= curStat && Math.abs(maxStat - curStat) > .0001) {
+            if (stat < curStat + statInterval) {
+                statList.set(index, 1);
+            }
             index++;
-            curStat += .1d;
+            curStat += statInterval;
         }
 
-        returnString = Arrays.toString(statArray).replace(" ", "").replace("[", "").replace("]", "");
+        returnString = Arrays.toString(statList.toArray()).replace(" ", "").replace("[", "").replace("]", "");
 
         return returnString;
     }
